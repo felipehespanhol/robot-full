@@ -10,9 +10,37 @@ var StateMain = {
     // sounds, text
     // good guys, explosions
 
+    this.numberOfMaps = 2;
     this.bombCount = [4, 10];
     this.need = this.bombCount[level-1];
     this.collected = 0;
+
+    //add sound buttons
+    this.btnMusic = gameButtons.addAudioButton("music", 20, 20, gameButtons.toggleMusic, this);
+    this.btnSound = gameButtons.addAudioButton("sound", 20, 70, gameButtons.toggleSound, this);
+
+    //if using a scrolling game uncomment these lines
+    this.audioGroup=game.add.group();
+    this.audioGroup.add(this.btnMusic);
+    this.audioGroup.add(this.btnSound);
+    this.audioGroup.fixedToCamera=true;
+    this.audioGroup.cameraOffset.setTo(0, 0);
+
+    //define sounds here
+    this.tickSound = game.add.audio("tick");
+    this.collectSound = game.add.audio("collect");
+    this.jumpSound = game.add.audio("jump");
+    this.boomSound = game.add.audio("boom");
+
+    //define background music
+    this.backgroundMusic = game.add.audio("backgroundMusic");
+    //pass the background music to the gameMedia object
+    gameMedia.setBackgroundMusic(this.backgroundMusic);
+
+    //init the music
+    gameMedia.updateMusic();
+    //init the sound buttons
+    gameButtons.updateButtons();
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -96,14 +124,27 @@ var StateMain = {
     game.world.bringToTop(this.timerGroup);
 
     game.time.events.loop(Phaser.Timer.SECOND/4, this.tick, this);
+
+    if (screen.width > 1500) {
+      this.buttonGroup.visible = false;
+    }
   },
 
   tick: function () {
     if (this.bar1.width > 1) {
       this.bar1.width--;
+      if (Math.floor(this.bar1.width) == 50) {
+        gameMedia.playSound(this.tickSound);
+      }    
     } else {
       // game over
+      this.doGameOver();
     }
+  },
+
+  doGameOver: function () {
+    gameMedia.playSound(this.boomSound);
+    game.state.start("StateOver");
   },
 
   makeMonsters: function () {
@@ -127,8 +168,16 @@ var StateMain = {
     }
     this.map.removeTile(tile.x, tile.y, this.layer);
     this.collected++;
+    gameMedia.playSound(this.collectedSound);
+
     if (this.collected == this.need) {
       level++;
+      if (level > this.numberOfMaps) {
+        level = 1;
+      }
+      if (this.level > this.numberOfMaps) {
+        level = 1;
+      }
       game.state.start("StateMain");
     }
   },
@@ -148,7 +197,7 @@ var StateMain = {
     if (player.y < monster.y) {
       monster.kill();
     } else {
-      console.log("game over");
+      this.doGameOver();
     }
   },
 
@@ -208,6 +257,7 @@ var StateMain = {
     if (this.robot.body.onFloor()) {
       this.robot.body.velocity.y = -Math.abs(this.robot.body.velocity.x) - 150;
       this.robot.animations.play('jump');
+      gameMedia.playSound(this.jumpSound);
     }
   },
 
