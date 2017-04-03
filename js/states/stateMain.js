@@ -135,7 +135,7 @@ var StateMain = {
       this.bar1.width--;
       if (Math.floor(this.bar1.width) == 50) {
         gameMedia.playSound(this.tickSound);
-      }    
+      }
     } else {
       // game over
       this.doGameOver();
@@ -168,7 +168,7 @@ var StateMain = {
     }
     this.map.removeTile(tile.x, tile.y, this.layer);
     this.collected++;
-    gameMedia.playSound(this.collectedSound);
+    gameMedia.playSound(this.collectSound);
 
     if (this.collected == this.need) {
       level++;
